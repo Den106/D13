@@ -1,0 +1,83 @@
+{% extends 'default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+{% load i18n %}
+
+{% block content %}
+
+    {% if author_posts %}
+    <h2>{% trans "All your publications" %}:</h2>
+    <hr>
+    <table>
+                <tr>
+                    <td><b>{% trans "Title" %}</b></td>
+                    <td><b>{% trans "Type" %}</b></td>
+                    <td><b>{% trans "Category" %}</b></td>
+                    <td><b>{% trans "Date of publication" %}</b></td>
+                    <td><b>{% trans "Preview" %}</b></td>
+                    <td><b>{% trans "Rating" %}</b></td>
+               </tr>
+
+                {% for post in author_posts %}
+                <tr>
+                    <td><a href="/news/{{ post.id }}">{{ post.title|censor }}</a></td>
+                    <td>{% if post.categoryType == 'NW' %}
+                            {% trans "News" %}
+                        {% elif post.categoryType == 'AR'  %}
+                            {% trans "Article" %}
+                        {% endif %}
+                    </td>
+                    <td>{% for cat in post.postCategory.all %}
+                        <<a href="/news/categories/{{ cat.id }}">{{ cat }}</a>>
+                    {% endfor %}
+                    </td>
+                    <td>{{ post.dateCreation|date:'d M Y' }}</td>
+                    <td>{{ post.text|truncatewords:20|censor }}</td>
+                    <td>{{ post.rating }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+    {% else %}
+        <br><b>{% trans "You haven't added any posts yet" %}.</b>
+
+    {% endif %}
+
+<hr>
+{% if is_not_author %}
+    <div> {% trans "To be able to add your publications, log in as an author" %}! ->
+    <button> <a href="http://127.0.0.1:8000/sign/upgrade/"> {% trans "Become an author" %} </a> </button>
+    </div>
+{% else %}
+    <button> <a href="/news/news/create"> {% trans "Add News" %} </a> </button>
+    <button> <a href="/news/articles/create"> {% trans "Add an Article" %} </a> </button>
+    <hr>
+    <b>{% trans "Attention!!! When you delete from the Authors group, all your publications are automatically deleted" %}!</b>
+    <br><button> <a href="/sign/log_out_author/"> {% trans "Exit the Authors group" %} </a> </button>
+
+{% endif %}
+<hr>
+    {# Добавляем пагинацию на страницу #}
+    {# Информация о предыдущих страницах #}
+    {% if page_obj.has_previous %}
+        {# Для каждой ссылки пагинации указываем обработку через новый тег #}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    {# Информация о текущей странице #}
+    {{ page_obj.number }}
+
+    {# Информация о следующих страницах #}
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

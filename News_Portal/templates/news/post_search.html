@@ -1,0 +1,86 @@
+{% extends 'default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+{% load i18n %}
+
+
+{% block title %}
+{% trans "Search" %}
+{% endblock title %}
+
+{% block content %}
+
+    <h3>{% trans "Search for publications" %}</h3>
+    <h6>
+    | {% trans 'Current time' %} : {{ current_time }} |
+    {%trans 'Time zone' %} : {{ TIME_ZONE }} |
+    </h6>
+    <hr>
+    <form method="GET">
+        {{ filter.form }}
+        <hr>
+        <p><input type="submit" value={% trans "Search" %}></p>
+    </form>
+    {% if filter.qs  %}
+        <h3>
+            {% if filter.qs|length > 1 %}
+                {{ filter.qs|length }} - {% trans "posts found" %}
+            {% elif filter.qs|length == 1 %}
+                {% trans "Only 1 post found" %}
+            {% endif %}
+        </h3>
+        <table>
+            <tr>
+                <td><b>{% trans "Title" %}</b></td>
+                <td><b>{% trans "Type" %}</b></td>
+                <td><b>{% trans "Date of publication" %}</b></td>
+                <td><b>{% trans "Author" %}</b></td>
+                <td><b>{% trans "Preview" %}</b></td>
+                <td><b>{% trans "Rating" %}</b></td>
+                <td><b>{% trans "Category" %}</b></td>
+           </tr>
+
+            {% for post in search_list %}
+            <tr>
+                <td><a href="/news/{{ post.id }}">{{ post.title|censor }}</a></td>
+                <td>{% if post.categoryType == 'NW' %}
+                        {% trans "News" %}
+                    {% elif post.categoryType == 'AR'  %}
+                        {% trans "Article" %}
+                    {% endif %}
+                </td>
+                <td>{{ post.dateCreation|date:'d M Y' }}</td>
+                <td>{{ post.author }}</td>
+                <td>{{ post.text|truncatewords:20|censor }}</td>
+                <td>{{ post.rating }}</td>
+                <td>{% for cat in post.postCategory.all %}
+                        <<a href="/news/categories/{{ cat.id }}">{{ cat }}</a>>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </table>
+    {% else %}
+        <h2>{% trans "There are no posts according to such criteria" %}!</h2>
+    {% endif %}
+
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    {{ page_obj.number }}
+
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+
+{% endblock content %}

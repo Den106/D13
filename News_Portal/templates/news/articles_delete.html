@@ -1,0 +1,12 @@
+{% extends 'default.html' %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Deleting an article" %}</h1>
+<hr>
+<form action="" method="post">
+    {% csrf_token %}
+    <p><h5>{% trans "Delete" %} "{{ object.title}}" ???</h5>
+    <br><button type="submit" class="btn btn-danger" role="button">{% trans 'Delete' %}</button>
+</form>
+{% endblock content %}
